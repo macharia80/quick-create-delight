@@ -1,13 +1,122 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import MainLayout from '../layouts/MainLayout';
+import Hero from '../components/Hero';
+import CategoryFilter from '../components/CategoryFilter';
+import RestaurantCard from '../components/RestaurantCard';
+import RecommendationSection from '../components/RecommendationSection';
+import { restaurants } from '../data/restaurants';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Clock, MapPin, Search } from 'lucide-react';
 
 const Index = () => {
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  
+  const filteredRestaurants = selectedCategory === 'All' 
+    ? restaurants 
+    : restaurants.filter(restaurant => 
+        restaurant.categories.includes(selectedCategory)
+      );
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <MainLayout>
+      {/* Hero Section */}
+      <Hero />
+      
+      {/* Mobile search bar - only for mobile */}
+      <div className="block md:hidden px-4 -mt-6 relative z-10">
+        <div className="bg-white rounded-full shadow-lg flex items-center p-1">
+          <Search className="h-4 w-4 ml-3 text-gray-400" />
+          <input 
+            type="text" 
+            placeholder="Find restaurant or cuisine..." 
+            className="py-2 px-3 flex-1 text-sm focus:outline-none"
+          />
+        </div>
       </div>
-    </div>
+      
+      {/* Fast delivery section */}
+      <section className="py-6">
+        <div className="food-container">
+          <h2 className="section-title">Fast delivery, 35 mins or less</h2>
+          <ScrollArea className="w-full">
+            <div className="flex space-x-4 pb-4">
+              {restaurants
+                .filter(r => parseInt(r.deliveryTime.split('-')[1]) <= 35)
+                .slice(0, 6)
+                .map(restaurant => (
+                  <div key={restaurant.id} className="min-w-[240px] max-w-xs">
+                    <div className="relative h-32 rounded-lg overflow-hidden mb-2">
+                      <img 
+                        src={restaurant.image} 
+                        alt={restaurant.name} 
+                        className="object-cover w-full h-full"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                        <h3 className="text-white font-medium">{restaurant.name}</h3>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center text-gray-600">
+                        <Clock className="h-3 w-3 mr-1" />
+                        <span>{restaurant.deliveryTime}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        <span>{restaurant.distance} mi</span>
+                      </div>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      </section>
+      
+      {/* Recommendations Section */}
+      <RecommendationSection />
+      
+      {/* Main Restaurant Listing */}
+      <section className="py-6 bg-gray-50">
+        <div className="food-container">
+          <h2 className="section-title">All Restaurants</h2>
+          
+          {/* Category Filter */}
+          <CategoryFilter 
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
+          
+          {/* Restaurant Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredRestaurants.map((restaurant) => (
+              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            ))}
+          </div>
+          
+          {filteredRestaurants.length > 8 && (
+            <div className="mt-8 text-center">
+              <Button variant="outline" size="lg">
+                Load more restaurants
+              </Button>
+            </div>
+          )}
+          
+          {filteredRestaurants.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No restaurants found in this category.</p>
+              <Button 
+                className="mt-4" 
+                onClick={() => setSelectedCategory('All')}
+              >
+                View all restaurants
+              </Button>
+            </div>
+          )}
+        </div>
+      </section>
+    </MainLayout>
   );
 };
 

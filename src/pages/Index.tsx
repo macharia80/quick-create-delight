@@ -5,19 +5,51 @@ import Hero from '../components/Hero';
 import CategoryFilter from '../components/CategoryFilter';
 import RestaurantCard from '../components/RestaurantCard';
 import RecommendationSection from '../components/RecommendationSection';
+import SortOptions from '../components/SortOptions';
 import { restaurants } from '../data/restaurants';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Clock, MapPin, Search } from 'lucide-react';
 
+type SortOption = 'rating' | 'deliveryTime' | 'deliveryFee' | 'distance';
+
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortOption, setSortOption] = useState<SortOption>('rating');
+  const [visibleCount, setVisibleCount] = useState(8);
   
-  const filteredRestaurants = selectedCategory === 'All' 
+  // Filter restaurants by category
+  const categoryFilteredRestaurants = selectedCategory === 'All' 
     ? restaurants 
     : restaurants.filter(restaurant => 
         restaurant.categories.includes(selectedCategory)
       );
+      
+  // Sort restaurants
+  const sortedRestaurants = [...categoryFilteredRestaurants].sort((a, b) => {
+    switch (sortOption) {
+      case 'rating':
+        return b.rating - a.rating;
+      case 'deliveryTime':
+        // Extract first number from delivery time range (e.g., "15-25 min" -> 15)
+        const aTime = parseInt(a.deliveryTime.split('-')[0]);
+        const bTime = parseInt(b.deliveryTime.split('-')[0]);
+        return aTime - bTime;
+      case 'deliveryFee':
+        return a.deliveryFee - b.deliveryFee;
+      case 'distance':
+        return a.distance - b.distance;
+      default:
+        return 0;
+    }
+  });
+  
+  // Slice for pagination
+  const visibleRestaurants = sortedRestaurants.slice(0, visibleCount);
+  
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + 4);
+  };
 
   return (
     <MainLayout>
@@ -80,7 +112,10 @@ const Index = () => {
       {/* Main Restaurant Listing */}
       <section className="py-6 bg-gray-50">
         <div className="food-container">
-          <h2 className="section-title">All Restaurants</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="section-title">All Restaurants</h2>
+            <SortOptions onSort={setSortOption} currentSort={sortOption} />
+          </div>
           
           {/* Category Filter */}
           <CategoryFilter 
@@ -90,20 +125,20 @@ const Index = () => {
           
           {/* Restaurant Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredRestaurants.map((restaurant) => (
+            {visibleRestaurants.map((restaurant) => (
               <RestaurantCard key={restaurant.id} restaurant={restaurant} />
             ))}
           </div>
           
-          {filteredRestaurants.length > 8 && (
+          {visibleRestaurants.length < sortedRestaurants.length && (
             <div className="mt-8 text-center">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" onClick={handleLoadMore}>
                 Load more restaurants
               </Button>
             </div>
           )}
           
-          {filteredRestaurants.length === 0 && (
+          {sortedRestaurants.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-500">No restaurants found in this category.</p>
               <Button 

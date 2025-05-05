@@ -1,12 +1,15 @@
 
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPin, Search, ShoppingBag, Menu, X } from "lucide-react";
+import { useCart } from '../context/CartContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+  const { totalItems } = useCart();
+  const navigate = useNavigate();
   
   return (
     <header className="sticky top-0 bg-white z-50 shadow-sm">
@@ -14,9 +17,9 @@ const Header = () => {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-food-orange">
+            <Link to="/" className="text-2xl font-bold text-food-orange">
               Quick<span className="text-food-green">Eats</span>
-            </h1>
+            </Link>
           </div>
           
           {/* Address selector - hidden on mobile */}
@@ -38,11 +41,15 @@ const Header = () => {
           
           {/* Cart button */}
           <div className="flex items-center">
-            <Button variant="ghost" className="relative p-2">
+            <Button 
+              variant="ghost" 
+              className="relative p-2"
+              onClick={() => navigate('/cart')}
+            >
               <ShoppingBag className="h-6 w-6" />
-              {cartCount > 0 && (
+              {totalItems > 0 && (
                 <span className="absolute -top-1 -right-1 bg-food-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartCount}
+                  {totalItems}
                 </span>
               )}
             </Button>
@@ -82,16 +89,20 @@ const Header = () => {
             <nav>
               <ul className="space-y-3">
                 <li>
-                  <a href="#" className="block hover:text-food-orange">Home</a>
+                  <Link to="/" className="block hover:text-food-orange" onClick={() => setIsMenuOpen(false)}>
+                    Home
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="block hover:text-food-orange">My Orders</a>
+                  <Link to="/cart" className="block hover:text-food-orange" onClick={() => setIsMenuOpen(false)}>
+                    Cart {totalItems > 0 && `(${totalItems})`}
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="block hover:text-food-orange">Favorites</a>
+                  <button className="block hover:text-food-orange">My Orders</button>
                 </li>
                 <li>
-                  <a href="#" className="block hover:text-food-orange">Profile</a>
+                  <button className="block hover:text-food-orange">Favorites</button>
                 </li>
               </ul>
             </nav>

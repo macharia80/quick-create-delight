@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { getPopularItems } from '../data/restaurants';
 import FoodItem from './FoodItem';
 
@@ -13,7 +14,9 @@ const RecommendationSection = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {popularItems.slice(0, 5).map((item) => (
             <div key={`${item.restaurantId}-${item.id}`}>
-              <FoodItem item={item} compact />
+              <Link to={`/restaurant/${item.restaurantId}`}>
+                <FoodItem item={item} compact />
+              </Link>
             </div>
           ))}
         </div>
